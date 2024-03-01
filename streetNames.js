@@ -4,39 +4,58 @@ const options = {
     maximumAge: 2000, // Milliseconds for which it is acceptable to use cached position (default 0)
 };
 
-navigator.geolocation.watchPosition(success, error, options); 
-// Fires success function immediately and when user position changes
+const map = L.map('map'); // Initialize map
 
-const map = L.map('map'); 
-// Initializes map
+var startButton = document.getElementById('startbutton');
+var cityNameField = document.getElementById('cityselect');
 
-map.setView([47.67, 9.17], 13); 
-// Sets initial coordinates and zoom level
+map.setView([47.67, 9.17], 13); // Set initial coordinates and zoom level
 
 L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: 'Carto Positron Basemap'
-}).addTo(map); 
-// Sets map data source and associates with map
+}).addTo(map);
 
-function success(pos) {
+function onClick(event) {
+        
+    event.preventDefault(); // Prevents the default form submission behavior
 
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    const accuracy = pos.coords.accuracy; // Accuracy in metres
+    cityName = cityNameField.value;
+    const apiUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${cityName}`;
+    
+    var boundingBox;
 
-    console.log(lat)
+    fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+        // Check if any results were returned
+        if (data.length > 0) {
+            const result = data[0]; // Access the first result for simplicity
+
+            // Extract and log the location (latitude and longitude)
+            const location = {
+                latitude: parseFloat(result.lat),
+                longitude: parseFloat(result.lon)
+            };
+            console.log('Location:', location);
+
+            // Extract and log the bounding box (area)
+            boundingBox = {
+                minLat: parseFloat(result.boundingbox[0]),
+                maxLat: parseFloat(result.boundingbox[1]),
+                minLon: parseFloat(result.boundingbox[2]),
+                maxLon: parseFloat(result.boundingbox[3])
+            };
+            console.log('Bounding Box:', boundingBox);
+            map.fitBounds([[boundingBox.minLat, boundingBox.minLon],[boundingBox.maxLat, boundingBox.maxLon]]);
+        } else {
+            console.log('No results found for the city:', cityName);
+        }
+    })
+    .catch(error => console.log('Error fetching data:', error));
 
 }
 
-function error(err) {
-
-    if (err.code === 1) {
-        alert("Please allow geolocation access");
-        // Runs if user refuses access
-    } else {
-        alert("Cannot get current location");
-        // Runs if there was a technical problem.
-    }
-
-}
+document.addEventListener('DOMContentLoaded', function () {
+    startButton.addEventListener('click', onClick);
+});
