@@ -60,3 +60,38 @@ function onSearchClick(event) {
 document.addEventListener('DOMContentLoaded', function () {
     searchButton.addEventListener('click', onSearchClick);
 });
+
+var bbox = 'left=8.5&right=9&top=47.5&bottom=47'; // Example bounding box (replace with your actual bounding box)
+var overpassQuery = `[out:json];way[${bbox}][highway];out;`; // Overpass API query
+
+function getRoadData(bbox) {
+
+    var road_tiers = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential', 'service', 'unclassified'];
+    var bbox_string = `left=${bbox[0][1]}&right=${bbox[1][1]}&top=${bbox[0][0]}&bottom=${bbox[1][0]}`;
+    var overpassQuery = '[out:json];('
+    for(tier in road_tiers) {
+        var this_checkbox = document.getElementById(`checkbox_${tier}`);
+        if(this_checkbox.checked) {
+            overpassQuery = overpassQuery + `way[${bbox}][highway=${tier}];`
+        }
+    }
+    overpassQuery = overpassQuery + ');out;';
+    console.log(`Overpass Query: ${overpassQuery}`)
+
+    var apiUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Process the data returned by the Overpass API
+            console.log(`Size of data obtained: ${JSON.stringify(bigObject).length}`);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+}
