@@ -7,6 +7,7 @@ const options = {
 const map = L.map('map'); // Initialize map
 
 var startButton = document.getElementById('startbutton');
+var searchButton = document.getElementById('searchbutton');
 var cityNameField = document.getElementById('cityselect');
 
 map.setView([47.67, 9.17], 13); // Set initial coordinates and zoom level
@@ -16,7 +17,7 @@ L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
     attribution: 'Carto Positron Basemap'
 }).addTo(map);
 
-function onClick(event) {
+function onSearchClick(event) {
         
     event.preventDefault(); // Prevents the default form submission behavior
 
@@ -57,5 +58,5 @@ function onClick(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    startButton.addEventListener('click', onClick);
+    searchButton.addEventListener('click', onSearchClick);
 });
