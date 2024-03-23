@@ -57,41 +57,52 @@ function onSearchClick(event) {
 
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    searchButton.addEventListener('click', onSearchClick);
-});
-
-var bbox = 'left=8.5&right=9&top=47.5&bottom=47'; // Example bounding box (replace with your actual bounding box)
-var overpassQuery = `[out:json];way[${bbox}][highway];out;`; // Overpass API query
-
 function getRoadData(bbox) {
 
     var road_tiers = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential', 'service', 'unclassified'];
-    var bbox_string = `left=${bbox[0][1]}&right=${bbox[1][1]}&top=${bbox[0][0]}&bottom=${bbox[1][0]}`;
+    var bbox_string = `${bbox.getSouth()}, ${bbox.getWest()}, ${bbox.getNorth()}, ${bbox.getEast()}`;
     var overpassQuery = '[out:json];('
-    for(tier in road_tiers) {
+    for(var tier of road_tiers) {
         var this_checkbox = document.getElementById(`checkbox_${tier}`);
+        console.log(`checking for checkbox_${tier}: ${this_checkbox}`);
         if(this_checkbox.checked) {
-            overpassQuery = overpassQuery + `way[${bbox}][highway=${tier}];`
+            overpassQuery = overpassQuery + `way[highway=${tier}](${bbox_string});`
         }
     }
-    overpassQuery = overpassQuery + ');out;';
+    overpassQuery = overpassQuery + ');out geom;';
     console.log(`Overpass Query: ${overpassQuery}`)
 
     var apiUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
 
     fetch(apiUrl)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Process the data returned by the Overpass API
-            console.log(`Size of data obtained: ${JSON.stringify(bigObject).length}`);
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
-        });
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Process the data returned by the Overpass API
+        console.log(data);
+        return data;
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
 }
+
+function onStartClick(event) {
+
+    event.preventDefault(); // Prevents the default form submission behavior
+    bbox = map.getBounds();
+    console.log(`Requesting data for bounding box ${bbox}`);
+    road_data = getRoadData(bbox);
+
+    
+
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    searchButton.addEventListener('click', onSearchClick);
+    startButton.addEventListener('click', onStartClick);
+});
