@@ -11,6 +11,8 @@ var searchButton = document.getElementById('searchbutton');
 var cityNameField = document.getElementById('cityselect');
 
 var names_played = new Set([""]); // Never choose a road with undefined name
+var got_right = new Set();
+var got_wrong = new Set();
 
 map.setView([47.66, 9.175], 17); // Set initial coordinates and zoom level
 
@@ -61,7 +63,7 @@ function onSearchClick(event) {
 
 function getRoadData(bbox) {
 
-    var road_tiers = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential', 'service', 'unclassified'];
+    var road_tiers = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential', 'pedestrian', 'service', 'path', 'unclassified'];
     var bbox_string = `${bbox.getSouth()}, ${bbox.getWest()}, ${bbox.getNorth()}, ${bbox.getEast()}`;
     var overpassQuery = '[out:json];('
     for(var tier of road_tiers) {
@@ -119,7 +121,7 @@ function onStartClick(event) {
         var roads = data['elements'];
         var n_roads = roads.length;
         var thisName = "";
-        
+
         while(names_played.has(thisName)) {
             console.log(`${thisName} already in set {${Array.from(names_played).join(';')}}`);
             i = Math.floor(n_roads * Math.random());
