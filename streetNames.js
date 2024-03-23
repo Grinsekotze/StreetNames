@@ -10,7 +10,9 @@ var startButton = document.getElementById('startbutton');
 var searchButton = document.getElementById('searchbutton');
 var cityNameField = document.getElementById('cityselect');
 
-map.setView([47.67, 9.17], 13); // Set initial coordinates and zoom level
+var names_played = new Set([""]); // Never choose a road with undefined name
+
+map.setView([47.66, 9.175], 17); // Set initial coordinates and zoom level
 
 L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -64,17 +66,17 @@ function getRoadData(bbox) {
     var overpassQuery = '[out:json];('
     for(var tier of road_tiers) {
         var this_checkbox = document.getElementById(`checkbox_${tier}`);
-        console.log(`checking for checkbox_${tier}: ${this_checkbox}`);
+        // console.log(`checking for checkbox_${tier}: ${this_checkbox}`);
         if(this_checkbox.checked) {
             overpassQuery = overpassQuery + `way[highway=${tier}](${bbox_string});`
         }
     }
     overpassQuery = overpassQuery + ');out geom;';
-    console.log(`Overpass Query: ${overpassQuery}`)
+    // console.log(`Overpass Query: ${overpassQuery}`)
 
     var apiUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
 
-    fetch(apiUrl)
+    return fetch(apiUrl)
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -82,8 +84,6 @@ function getRoadData(bbox) {
         return response.json();
     })
     .then(data => {
-        // Process the data returned by the Overpass API
-        console.log(data);
         return data;
     })
     .catch(error => {
@@ -91,14 +91,49 @@ function getRoadData(bbox) {
     });
 }
 
+function drawRoad(road) {
+
+    var pointList = [];
+    for(point of road['geometry']) {
+        pointList.push(new L.LatLng(point['lat'], point['lon']))
+    }
+
+    var mypolyline = new L.Polyline(pointList, {
+        color: 'red',
+        weight: 3,
+        opacity: 0.5,
+        smoothFactor: 1
+    });
+    mypolyline.addTo(map);
+
+}
+
 function onStartClick(event) {
 
     event.preventDefault(); // Prevents the default form submission behavior
     bbox = map.getBounds();
-    console.log(`Requesting data for bounding box ${bbox}`);
-    road_data = getRoadData(bbox);
+    // console.log(`Requesting data for bounding box ${bbox}`);
+    getRoadData(bbox)
+    .then(data => {
+        // console.log(data);
+        var roads = data['elements'];
+        var n_roads = roads.length;
+        var thisName = "";
+        
+        while(names_played.has(thisName)) {
+            console.log(`${thisName} already in set {${Array.from(names_played).join(';')}}`);
+            i = Math.floor(n_roads * Math.random());
+            road = roads[i];
+            thisName = road['tags']['name'];
+        }
+        names_played.add(thisName);
+        console.log(`Adding ${thisName}`);
 
-    
+        var sameName = roads.filter(function (entry) {
+            return entry['tags']['name'] == thisName;
+        });
+        for(r of sameName) { drawRoad(r); }
+    });
 
 }
 
