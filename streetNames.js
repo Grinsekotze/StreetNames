@@ -90,7 +90,7 @@ function onSearchClick(event) {
 
 function getRoadData(bbox) {
 
-    var road_tiers = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential', 'pedestrian', 'service', 'path', 'unclassified'];
+    var road_tiers = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential', 'pedestrian', 'living_street', 'service', 'path', 'unclassified'];
     var bbox_string = `${bbox.getSouth()}, ${bbox.getWest()}, ${bbox.getNorth()}, ${bbox.getEast()}`;
     var overpassQuery = '[out:json];('
     for(var tier of road_tiers) {
