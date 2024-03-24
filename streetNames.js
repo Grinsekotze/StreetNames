@@ -113,6 +113,7 @@ function getRoadData(bbox) {
         return response.json();
     })
     .then(data => {
+        console.log(data);
         return data;
     })
     .catch(error => {
@@ -169,6 +170,10 @@ function onStartClick(event) {
     .then(data => {
         // console.log(data);
         roads = data['elements'];
+        roads = roads.filter(function (entry) {
+            return entry['tags'].hasOwnProperty('name') //only allow roads that have names
+        });
+
         roadnames = new Set();
         roads.forEach(road => { roadnames.add(road['tags']['name']); });
         console.log(`Found ${roadnames.size} street names`);
