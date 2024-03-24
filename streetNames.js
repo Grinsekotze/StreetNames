@@ -204,6 +204,14 @@ function onStartClick(event) {
 
 }
 
+function namesMatch(a, b) {
+    function flatten(s) {
+        return s.trim().toLowerCase().replace('-','').replace(' ','').replace("straße","str.").replace("str.","str");
+    }
+    console.log(`Comparing "${flatten(a)}" to "${flatten(b)}"`);
+    return flatten(a) == flatten(b);
+}
+
 function onSubmitClick(event) {
 
     event.preventDefault();
@@ -211,7 +219,7 @@ function onSubmitClick(event) {
     streetNameField.value = "";
 
     if(current_mode == "Identify") {
-        if(submitted == correct_name) {
+        if(namesMatch(submitted, correct_name)) {
             got_right.add(correct_name);
             drawNamedRoad(correct_name, correct_layer, 'green', false);
         } else {
