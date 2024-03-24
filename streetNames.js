@@ -206,7 +206,7 @@ function onStartClick(event) {
 
 function namesMatch(a, b) {
     function flatten(s) {
-        return s.trim().toLowerCase().replace('-','').replace(' ','').replace("straße","str.").replace("str.","str");
+        return s.trim().toLowerCase().replaceAll('-','').replaceAll(' ','').replaceAll("straße","str.").replaceAll("str.","str");
     }
     console.log(`Comparing "${flatten(a)}" to "${flatten(b)}"`);
     return flatten(a) == flatten(b);
