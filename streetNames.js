@@ -4,7 +4,7 @@ const options = {
     maximumAge: 2000, // Milliseconds for which it is acceptable to use cached position (default 0)
 };
 
-const map = L.map('map', {drawControl: true}); // Initialize map
+const map = L.map('map', {editable: true}); // Initialize map
 
 var correct_layer = L.layerGroup();
 var wrong_layer = L.layerGroup();
@@ -14,13 +14,6 @@ correct_layer.addTo(map);
 wrong_layer.addTo(map);
 current_layer.addTo(map);
 box_layer.addTo(map);
-
-// var drawnItems = new L.FeatureGroup();
-// map.addLayer(drawnItems);
-// var drawControl = new L.Control.Draw({
-//     edit: { featureGroup: drawnItems }
-// });
-// map.addControl(drawControl);
 
 var searchButton = document.getElementById('searchbutton');
 var cityNameField = document.getElementById('cityselect');
@@ -40,13 +33,17 @@ var got_right = new Set();
 var got_wrong = new Set();
 var current_mode = "None";
 
-
 map.setView([47.66, 9.175], 17); // Set initial coordinates and zoom level
 
 L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: 'Carto Positron Basemap'
+    attribution: 'Data © OpenStreetMap contributors | Tiles © Carto Positron Basemap'
 }).addTo(map);
+
+var rect = L.rectangle(map.getBounds(), {color: 'black', fill: false});
+rect.addTo(box_layer);
+rect.enableEdit();
+rect.on('edit', function() { console.log(rect.getBounds().getBBoxString()); });
 
 function onSearchClick(event) {
         
@@ -80,6 +77,9 @@ function onSearchClick(event) {
             };
             console.log('Bounding Box:', boundingBox);
             map.fitBounds([[boundingBox.minLat, boundingBox.minLon],[boundingBox.maxLat, boundingBox.maxLon]]);
+            rect.setBounds(map.getBounds());
+            rect.disableEdit(); // Leaflet.Editable loses track of editability after resizing
+            rect.enableEdit();
         } else {
             console.log('No results found for the city:', cityName);
         }
@@ -101,7 +101,7 @@ function getRoadData(bbox) {
         }
     }
     overpassQuery = overpassQuery + ');out geom;';
-    // console.log(`Overpass Query: ${overpassQuery}`)
+    console.log(`Overpass Query: ${overpassQuery}`)
 
     var apiUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
 
@@ -161,12 +161,9 @@ function chooseStreet(names, taken) {
 function onStartClick(event) {
 
     event.preventDefault(); // Prevents the default form submission behavior
-    bbox = map.getBounds();
-    
-    box_layer.clearLayers();
-    L.rectangle(bbox, {color: 'black', fill: false}).addTo(box_layer);
+
     // console.log(`Requesting data for bounding box ${bbox}`);
-    getRoadData(bbox)
+    getRoadData(rect.getBounds())
     .then(data => {
         // console.log(data);
         roads = data['elements'];
