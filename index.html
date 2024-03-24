@@ -11,12 +11,20 @@
     <meta charset="UTF-8">
     
     <style>
-        html, body, #container {
+        html, body {
             width: 100%;
             height: 100%;
             margin: 0px;
         }
         
+        .wrapper {
+            background: lightblue;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
         .navbar { 
             color: #BBB;
             font-family: Helvetica, Arial, sans-serif;
@@ -32,62 +40,60 @@
             padding: 14px;
         }
         
-        #container {
-            padding-top: 50px;
-        }
-        
         #map {
             width: 100%;
-            height: 100%;
+            flex: 1;
         }
             
-            #error-box {
-                margin-top: 100px;
-            }
+        #error-box {
+            margin-top: 100px;
+        }
             
-        </style>
+    </style>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-default navbar-fixed-top">
-        <div id="navbar" class="navbar-collapse collapse">
-            <a class="navbar-brand" href="#" style="float: left;">Learn Street Names!</a>
-            <form class="navbar-form navbar-left" style="float: left;">
-                <fieldset>
-                    <label>City Name: <input id="cityselect"></input> </label>
-                    <button id="searchbutton">Search</button>
-                    <label>Game Mode:
-                        <select id="modeselector">
-                            <option value="Find">Find Streets</option>
-                            <option value="Identify" selected>Identify Streets</option>
-                            <option value="List">List Streets</option>
-                        </select>
-                    </label>
-                </fieldset>
-                <fieldset>
-                    <label> <input type="checkbox" id="checkbox_motorway" name="street_select" value="motorway" checked> Motorway</label>
-                    <label> <input type="checkbox" id="checkbox_trunk" name="street_select" value="trunk" checked> Trunk</label>
-                    <label> <input type="checkbox" id="checkbox_primary" name="street_select" value="Primary" checked> Primary</label>
-                    <label> <input type="checkbox" id="checkbox_secondary" name="street_select" value="Secondary" checked> Secondary</label>
-                    <label> <input type="checkbox" id="checkbox_tertiary" name="street_select" value="Tertiary" checked> Tertiary</label>
-                    <label> <input type="checkbox" id="checkbox_residential" name="street_select" value="Residential" checked> Residential</label>
-                    <label> <input type="checkbox" id="checkbox_pedestrian" name="street_select" value="Pedestrian" checked> Pedestrian</label>
-                    <label> <input type="checkbox" id="checkbox_service" name="street_select" value="Service"> Service</label>
-                    <label> <input type="checkbox" id="checkbox_path" name="street_select" value="Path"> Path</label>
-                    <label> <input type="checkbox" id="checkbox_unclassified" name="street_select" value="Unclassified"> Unclassified</label>
-                </fieldset>
-                <fieldset>
-                    <button id="startbutton">Start Game!</button>
-                    <label>Street Name: <input id="streetname"></input> </label>
-                    <button id="submitbutton">Submit</button>
-                    <label id="results">0 Correct, 0 Incorrect, 0 Remaining</label>
-                </fieldset>
-            </form>
-        </div>
-    </nav>
+    <div class="wrapper">
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div id="navbar" class="navbar-collapse collapse">
+                <a class="navbar-brand" href="#" style="float: left;">Learn Street Names!</a>
+                <form class="navbar-form navbar-left" style="float: left;">
+                    <fieldset>
+                        <label>City Name: <input id="cityselect"></input> </label>
+                        <button id="searchbutton">Search</button>
+                        <label>Game Mode:
+                            <select id="modeselector">
+                                <option value="Find">Find Streets</option>
+                                <option value="Identify" selected>Identify Streets</option>
+                                <option value="List">List Streets</option>
+                            </select>
+                        </label>
+                    </fieldset>
+                    <fieldset>
+                        <label> <input type="checkbox" id="checkbox_motorway" name="street_select" value="motorway" checked> Motorway</label>
+                        <label> <input type="checkbox" id="checkbox_trunk" name="street_select" value="trunk" checked> Trunk</label>
+                        <label> <input type="checkbox" id="checkbox_primary" name="street_select" value="Primary" checked> Primary</label>
+                        <label> <input type="checkbox" id="checkbox_secondary" name="street_select" value="Secondary" checked> Secondary</label>
+                        <label> <input type="checkbox" id="checkbox_tertiary" name="street_select" value="Tertiary" checked> Tertiary</label>
+                        <label> <input type="checkbox" id="checkbox_residential" name="street_select" value="Residential" checked> Residential</label>
+                        <label> <input type="checkbox" id="checkbox_pedestrian" name="street_select" value="Pedestrian" checked> Pedestrian</label>
+                        <label> <input type="checkbox" id="checkbox_service" name="street_select" value="Service"> Service</label>
+                        <label> <input type="checkbox" id="checkbox_path" name="street_select" value="Path"> Path</label>
+                        <label> <input type="checkbox" id="checkbox_unclassified" name="street_select" value="Unclassified"> Unclassified</label>
+                    </fieldset>
+                    <fieldset>
+                        <button id="startbutton">Start Game!</button>
+                        <label>Street Name: <input id="streetname"></input> </label>
+                        <button id="submitbutton">Submit</button>
+                        <label id="results">0 Correct, 0 Incorrect, 0 Remaining</label>
+                    </fieldset>
+                </form>
+            </div>
+        </nav>
 
-    <div id="map"></div>
+        <div id="map"></div>
+    </div>
 
 </body>
 
