@@ -4,15 +4,42 @@ const options = {
     maximumAge: 2000, // Milliseconds for which it is acceptable to use cached position (default 0)
 };
 
-const map = L.map('map'); // Initialize map
+const map = L.map('map', {drawControl: true}); // Initialize map
 
-var startButton = document.getElementById('startbutton');
+var correct_layer = L.layerGroup();
+var wrong_layer = L.layerGroup();
+var current_layer = L.layerGroup();
+var box_layer = L.layerGroup();
+correct_layer.addTo(map);
+wrong_layer.addTo(map);
+current_layer.addTo(map);
+box_layer.addTo(map);
+
+// var drawnItems = new L.FeatureGroup();
+// map.addLayer(drawnItems);
+// var drawControl = new L.Control.Draw({
+//     edit: { featureGroup: drawnItems }
+// });
+// map.addControl(drawControl);
+
 var searchButton = document.getElementById('searchbutton');
 var cityNameField = document.getElementById('cityselect');
+var modeSelector = document.getElementById('modeselector');
+var startButton = document.getElementById('startbutton');
+var streetNameField = document.getElementById('streetname');
+var submitButton = document.getElementById('submitbutton');
+var resultsLabel = document.getElementById('results');
+
+var roads;
+var roadnames;
+var correct_name;
+var correct_roads;
 
 var names_played = new Set([""]); // Never choose a road with undefined name
 var got_right = new Set();
 var got_wrong = new Set();
+var current_mode = "None";
+
 
 map.setView([47.66, 9.175], 17); // Set initial coordinates and zoom level
 
@@ -93,7 +120,7 @@ function getRoadData(bbox) {
     });
 }
 
-function drawRoad(road) {
+function drawRoad(road, layer, col, popup) {
 
     var pointList = [];
     for(point of road['geometry']) {
@@ -101,45 +128,118 @@ function drawRoad(road) {
     }
 
     var mypolyline = new L.Polyline(pointList, {
-        color: 'red',
+        color: col,
         weight: 3,
         opacity: 0.5,
         smoothFactor: 1
     });
-    mypolyline.addTo(map);
+    mypolyline.addTo(layer);
 
+    if(popup != "") { mypolyline.bindPopup(popup).openPopup(); }
+
+}
+
+function drawNamedRoad(name, layer, col, popup) {
+    var sameName = roads.filter(function (entry) {
+        return entry['tags']['name'] == name;
+    });
+    var popup_string = popup ? name : "";
+    for(r of sameName) { drawRoad(r, layer, col, popup_string); }
+}
+
+function chooseStreet(names, taken) {
+    var thisName;
+    do {
+        // console.log(`${thisName} already in set {${Array.from(names_played).join(';')}}`);
+        i = Math.floor(names.size * Math.random());
+        thisName = Array.from(names)[i];
+    } while(taken.has(thisName))
+    return thisName;
 }
 
 function onStartClick(event) {
 
     event.preventDefault(); // Prevents the default form submission behavior
     bbox = map.getBounds();
+    
+    box_layer.clearLayers();
+    L.rectangle(bbox, {color: 'black', fill: false}).addTo(box_layer);
     // console.log(`Requesting data for bounding box ${bbox}`);
     getRoadData(bbox)
     .then(data => {
         // console.log(data);
-        var roads = data['elements'];
-        var n_roads = roads.length;
-        var thisName = "";
+        roads = data['elements'];
+        roadnames = new Set();
+        roads.forEach(road => { roadnames.add(road['tags']['name']); });
+        console.log(`Found ${roadnames.size} street names`);
 
-        while(names_played.has(thisName)) {
-            console.log(`${thisName} already in set {${Array.from(names_played).join(';')}}`);
-            i = Math.floor(n_roads * Math.random());
-            road = roads[i];
-            thisName = road['tags']['name'];
-        }
-        names_played.add(thisName);
-        console.log(`Adding ${thisName}`);
+        current_mode = modeSelector.value;
 
-        var sameName = roads.filter(function (entry) {
-            return entry['tags']['name'] == thisName;
-        });
-        for(r of sameName) { drawRoad(r); }
+        names_played = new Set();
+        got_right = new Set();
+        got_wrong = new Set();
+        
+        current_layer.clearLayers();
+        correct_layer.clearLayers();
+        wrong_layer.clearLayers();
+
+        startRound(current_mode);
+        
+        updateResults();
+
     });
 
+}
+
+function onSubmitClick(event) {
+
+    event.preventDefault();
+    submitted = streetNameField.value;
+    streetNameField.value = "";
+
+    if(current_mode == "Identify") {
+        if(submitted == correct_name) {
+            got_right.add(correct_name);
+            drawNamedRoad(correct_name, correct_layer, 'green', false);
+        } else {
+            got_wrong.add(correct_name);
+            drawNamedRoad(correct_name, wrong_layer, 'red', true);
+        }
+        current_layer.clearLayers();
+        updateResults();
+    }
+
+    if(got_right.size < roadnames.size) { startRound(current_mode); }
+    
+}
+
+function startRound(mode) {
+    
+    console.log(`Starting round in mode ${mode}`);
+
+    if(mode == "Identify") {
+        var thisName = chooseStreet(roadnames, got_right);
+        console.log(`Current street: ${thisName}`);
+        names_played.add(thisName);
+        drawNamedRoad(thisName, current_layer, 'blue', false);
+        correct_name = thisName;
+    }
+
+}
+
+function updateResults() {
+    resultsLabel.innerHTML = `${got_right.size} Correct, ${got_wrong.size} Incorrect, ${roadnames.size - got_right.size} Remaining`;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
     searchButton.addEventListener('click', onSearchClick);
     startButton.addEventListener('click', onStartClick);
+    submitButton.addEventListener('click', onSubmitClick);
 });
+
+streetNameField.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        submitButton.click();
+    }
+  });

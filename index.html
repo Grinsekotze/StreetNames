@@ -58,9 +58,9 @@
                     <label>City Name: <input id="cityselect"></input> </label>
                     <button id="searchbutton">Search</button>
                     <label>Game Mode:
-                        <select name="game_mode">
-                            <option value="Find" selected>Find Streets</option>
-                            <option value="Identify">Identify Streets</option>
+                        <select id="modeselector">
+                            <option value="Find">Find Streets</option>
+                            <option value="Identify" selected>Identify Streets</option>
                             <option value="List">List Streets</option>
                         </select>
                     </label>
@@ -81,7 +81,7 @@
                     <button id="startbutton">Start Game!</button>
                     <label>Street Name: <input id="streetname"></input> </label>
                     <button id="submitbutton">Submit</button>
-                    <label id="Results">0 Correct, 0 Incorrect, 0 Remaining</label>
+                    <label id="results">0 Correct, 0 Incorrect, 0 Remaining</label>
                 </fieldset>
             </form>
         </div>
