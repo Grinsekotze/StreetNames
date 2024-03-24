@@ -16,6 +16,7 @@ current_layer.addTo(map);
 box_layer.addTo(map);
 
 var searchButton = document.getElementById('searchbutton');
+var recenterButton = document.getElementById('recenterbutton');
 var cityNameField = document.getElementById('cityselect');
 var modeSelector = document.getElementById('modeselector');
 var startButton = document.getElementById('startbutton');
@@ -85,6 +86,16 @@ function onSearchClick(event) {
         }
     })
     .catch(error => console.log('Error fetching data:', error));
+
+}
+
+function onRecenterClick(event) {
+
+    event.preventDefault();
+
+    rect.setBounds(map.getBounds());
+    rect.disableEdit(); // Leaflet.Editable loses track of editability after resizing
+    rect.enableEdit();
 
 }
 
@@ -235,6 +246,7 @@ function updateResults() {
 
 document.addEventListener('DOMContentLoaded', function () {
     searchButton.addEventListener('click', onSearchClick);
+    recenterButton.addEventListener('click', onRecenterClick);
     startButton.addEventListener('click', onStartClick);
     submitButton.addEventListener('click', onSubmitClick);
 });
